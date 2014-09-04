@@ -36,3 +36,5 @@ Create a *bootstrap.js* file and declare it to be your `main` entrypoint in your
 Due to the nature of these polyfills, and the fact that built-in prototypes such as `String` / `Array` / etc are modified, it is not safe to use Traceur in Node.js packages in the main context.
 
 For this reason, *traceurified-module* isolates your package into a Node.js sandbox, using the built-in [vm](http://nodejs.org/api/vm.html) module. It is important to be aware of this.
+
+*traceurified-module* does its best to make the sandboxed environment seem like a regular Node.js environment. `require` is available. `process` is available. However, there are some caveats. For example, all of the built-ins, like `String`, `Array`, etc, will be pristine copies from V8, with Traceur's polyfills augmented. 
