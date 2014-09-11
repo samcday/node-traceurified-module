@@ -4,10 +4,11 @@ var vm = require("vm");
 var path = require("path");
 var fs = require("fs");
 var Module = require("module");
+var mkdirp = require("mkdirp");
 
 var traceurRuntimePath = require.resolve("traceur/bin/traceur-runtime");
 
-var findPackage = function(searchPath) {
+var findPackageRoot = function(searchPath) {
   // Start at the given path, work our way up until we find a package.json.
   while(searchPath !== "/") {
     if (fs.existsSync(path.join(searchPath, "package.json"))) {
@@ -19,7 +20,7 @@ var findPackage = function(searchPath) {
   throw new Error("Couldn't find a package.json from caller. Are you trying to use this from a REPL?");
 };
 
-var createSandbox = function(ctxModule) {
+var createSandbox = function(ctxModule, filename) {
   // A lot of this code is jacked from node-core module.js _compile
   var ctxRequire = function require(path) {
     return ctxModule.require(path);
@@ -51,7 +52,6 @@ var createSandbox = function(ctxModule) {
     require: ctxRequire,
     __filename: filename,
     __dirname: path.dirname(filename),
-    global: sandbox,
     root: root,
   };
 
@@ -59,12 +59,14 @@ var createSandbox = function(ctxModule) {
    sandbox[k] = global[k];
   }
 
+  delete sandbox.global;
+
   return sandbox;
 };
 
-var traceurRuntime = function() {
+var traceurRuntimeCode = function() {
   var script = fs.readFileSync(traceurRuntimePath, "utf8");
-  traceurRuntime = function() {
+  traceurRuntimeCode = function() {
     return script;
   }
   return script;
@@ -76,10 +78,18 @@ var hookRequire = function(baseDir, es6Files) {
     if (moduleFilename.indexOf(baseDir) === 0) {
       for (var i = 0; i < es6Files.length; i++) {
         if (moduleFilename === path.join(baseDir, es6Files[i])) {
-          var ctx = vm.createContext(createSandbox(newModule));
-          vm.runInContext(traceurRuntime(), ctx, traceurRuntimePath);
-          vm.runInContext(fs.readFileSync(moduleFilename, "utf8"), ctx, moduleFilename);
-          return true;
+          var ctx = vm.createContext(createSandbox(newModule, moduleFilename));
+          vm.runInContext(traceurRuntimeCode(), ctx, traceurRuntimePath);
+
+          // We don't add "global" to the sandbox until after we've set up Traceur runtime.
+          // Otherwise, the runtime attaches to main ctx built-ins via global.String / global.Object etc.
+          ctx.global = ctx;
+
+          var moduleBaseFilename = path.relative(baseDir, moduleFilename);
+          var compiledCode = fs.readFileSync(path.join(baseDir, ".traceurified", moduleBaseFilename));
+          vm.runInContext(compiledCode, ctx, moduleFilename);
+
+          return;
         }
       }
     }
@@ -88,19 +98,37 @@ var hookRequire = function(baseDir, es6Files) {
   };
 };
 
-exports.entrypoint = function(_module, entrypointFile) {
-  // Determine the base of calling module
-  var moduleBase = path.dirname(_module.filename);
-  var originRoot = findPackage(moduleBase);
+exports.entrypoint = function(originModule, entrypointFile) {
+  var root = findPackageRoot(path.dirname(originModule.filename));
+  var rootPackage = require(path.join(root, "package.json"));
+  var config = rootPackage.traceurified || {};
+  var manifest = config.files || [];
 
-  var originPackage = require(path.join(originPath, "package.json"));
-  var config = originPackage.traceurified || {};
-  var manifest = config.manifest || [];
-  manifest.unshift(path.join(moduleBase, entrypointFile));
-
-  hookRequire(originRoot, manifest);
+  hookRequire(root, manifest);
+  originModule.exports = originModule.require(path.join(root, entrypointFile));
 };
 
 exports.compile = function(root) {
+  root = findPackageRoot(root);
+  var rootPackage = require(path.join(root, "package.json"));
+  var config = rootPackage.traceurified || {};
+  var manifest = config.files || [];
 
+  // Put the traceur-runtime in dist dir.
+  var distRoot = path.join(root, ".traceurified");
+  mkdirp.sync(distRoot);
+  var traceurRuntime = fs.readFileSync(require.resolve("traceur/bin/traceur-runtime"), "utf8");
+  fs.writeFileSync(path.join(distRoot, "traceur-runtime.js"), traceurRuntime);
+
+  // Compile all the files.
+  var traceur = require("traceur");
+  manifest.forEach(function(file) {
+    var distPath = path.join(distRoot, file);
+    mkdirp.sync(path.dirname(distPath));
+
+    var originalFile = path.join(root, file);
+    var originalSource = fs.readFileSync(originalFile, "utf8");
+    var compiledSource = traceur.compile(originalSource);
+    fs.writeFileSync(distPath, compiledSource, "utf8");
+  });
 };
