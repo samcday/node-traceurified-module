@@ -6,6 +6,9 @@
   "scripts": {
     "test": "mocha"
   },
+  "bin": {
+    "traceurified-module-compile": "bin/traceurified-module-compile.js"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/samcday/node-traceurified-module.git"
@@ -26,5 +29,8 @@
   "homepage": "https://github.com/samcday/node-traceurified-module",
   "publishConfig": {
     "registry": "https://registry.npmjs.org"
+  },
+  "dependencies": {
+    "traceur": "0.0.61"
   }
 }

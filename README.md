@@ -6,17 +6,29 @@ Write Node.js packages in ES6 that can be used in production today.
 
 ## Quickstart
 
-Add dependencies on `traceurified-module` and `traceur` to your package.
+Add a dev-dependency on `traceurified-module` to your package.
 
-    npm install traceurified-module traceur --save
+    npm install traceurified-module --save-dev
 
-Create a *bootstrap.js* file and declare it to be your `main` entrypoint in your package.json.
+Add `.traceurified/` to your .gitignore / .hgignore / whatever SVN does (you're still using SVN?!).
+
+    echo ".traceurified/" >> .gitignore
+
+Make sure you have a `.npmignore` file present.
+
+    touch .npmignore
+
+Create a *bootstrap.js* file and declare it to be your `main` entrypoint in your package.json. Also configure a "prepublish" script to call `traceurified-module-compile`.
 
 **package.json**
 
     {
         // ...
-        "main": "bootstrap.js"
+        "main": "bootstrap.js",
+        "scripts": {
+          "prepublish": "traceurified-module-compile",
+        }
+        // ...
     }
 
 **bootstrap.js**
