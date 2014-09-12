@@ -41,6 +41,15 @@ Create a *bootstrap.js* file and declare it to be your `main` entrypoint in your
 
 ... Voila! You may now start writing ES6 code in your package.
 
+## Why use traceurified-module
+
+Most of the magic happens in Traceur. Traceur handles parsing ES6 code and transforming it into valid ES5 code, along with polyfilling ES6 standard library support. So, why use this project? What does it actually *do*?
+
+ * Simplifies transpiling your ES6 code into ES5 for distribution.
+ * Sandboxes your code so that ES6 polyfills and other traceur-runtime code does not affect other packages / application code running in the Node.js process.
+ * Basically, does its best to make writing ES6 code that targets ES5 runtimes as seamless as possible from a development and distribution perspective.
+ * Integrates with your project in such a way that removing it and shipping ES6 code is extremely simple (once Node.js itself ships a V8 version that implements all of the ES6 you need).
+
 ## How It Works
 
 [Traceur](https://github.com/google/traceur) compiles your ES6 code into ES5. It also provides a runtime to support ES6 constructs and polyfill new ES6 APIs.
