@@ -1,6 +1,6 @@
 {
   "name": "traceurified-module",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Write Node.js packages in ES6.",
   "main": "index.js",
   "scripts": {
@@ -31,7 +31,6 @@
     "registry": "https://registry.npmjs.org"
   },
   "dependencies": {
-    "mkdirp": "^0.5.0",
-    "traceur": "0.0.61"
+    "mkdirp": "^0.5.0"
   }
 }
