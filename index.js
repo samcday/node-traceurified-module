@@ -116,7 +116,9 @@ var createTraceurifiedRequire = function(root, manifest, originModule) {
 
           var moduleBaseFilename = path.relative(root, moduleFilename);
           var compiledCode = fs.readFileSync(path.join(root, traceurifiedDistDir, moduleBaseFilename));
-          return vm.runInContext(compiledCode, ctx, moduleFilename);
+          
+          vm.runInContext(compiledCode, ctx, moduleFilename);
+          return ctx.module.exports;
         }
       }
     }
@@ -133,12 +135,9 @@ exports.entrypoint = function(originModule, entrypointFile) {
     // traceurified-dist doesn't exist. We assume this means we're in dev mode.
 
   }
-  // hookRequire(root, manifest);
 
   var traceurifiedRequire = createTraceurifiedRequire(root, manifest, originModule);
-  traceurifiedRequire(entrypointFile);
-
-  // originModule.exports = originModule.require(path.join(root, entrypointFile));
+  return traceurifiedRequire(entrypointFile);
 };
 
 exports.compile = function(root) {
@@ -161,7 +160,18 @@ exports.compile = function(root) {
 
     var originalFile = path.join(root, file);
     var originalSource = fs.readFileSync(originalFile, "utf8");
-    var compiledSource = traceur.compile(originalSource);
+
+    var sourceMapGenerator = new traceur.outputgeneration.SourceMapGenerator({
+      file: originalFile,
+    });
+
+    var compileOpts = {
+      // sourceMapGenerator: sourceMapGenerator,
+      sourceMaps: "inline",
+    };
+
+    var compiledSource = traceur.compile(originalSource, compileOpts);
+
     fs.writeFileSync(distPath, compiledSource, "utf8");
   });
 };
