@@ -1,0 +1,27 @@
+{
+  "name": "traceurified-module-runtime",
+  "version": "0.1.0",
+  "description": "Write Node.js packages in ES6 (runtime).",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/samcday/node-traceurified-module.git"
+  },
+  "keywords": [
+    "traceur",
+    "es6",
+    "harmony",
+    "ecmascript6",
+    "esnext",
+    "jsnext"
+  ],
+  "author": "Sam Day <me@samcday.com.au>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/samcday/node-traceurified-module/issues"
+  },
+  "homepage": "https://github.com/samcday/node-traceurified-module"
+}
