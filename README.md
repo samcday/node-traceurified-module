@@ -9,12 +9,13 @@ Write Node.js packages in ES6 that can be used in production today.
 Add a dev-dependency on `traceurified-module` to your package.
 
     npm install traceurified-module --save-dev
+    npm install traceurified-module-runtime --save
 
-Add `.traceurified/` to your .gitignore / .hgignore / whatever SVN does (you're still using SVN?!).
+Add `traceurified-dist/` to your .gitignore / .hgignore / whatever SVN uses (you're still using SVN?!).
 
-    echo ".traceurified/" >> .gitignore
+    echo "traceurified-dist/" >> .gitignore
 
-Make sure you have a `.npmignore` file present.
+Make sure you have a `.npmignore` file present, you don't want it defaulting to .gitignore (traceurified-dist/ won't be included in your package tarball, which would be bad).
 
     touch .npmignore
 
@@ -58,4 +59,4 @@ Due to the nature of these polyfills, and the fact that built-in prototypes such
 
 For this reason, *traceurified-module* isolates your package into a Node.js sandbox, using the built-in [vm](http://nodejs.org/api/vm.html) module. It is important to be aware of this.
 
-*traceurified-module* does its best to make the sandboxed environment seem like a regular Node.js environment. `require` is available. `process` is available. However, there are some caveats. For example, all of the built-ins, like `String`, `Array`, etc, will be pristine copies from V8, with Traceur's polyfills augmented. 
+*traceurified-module* does its best to make the sandboxed environment seem like a regular Node.js environment. `require` is available. `process` is available. However, there are some caveats. For example, all of the built-ins, like `String`, `Array`, etc, will be pristine copies from V8, with Traceur's polyfills augmented.

@@ -4,7 +4,9 @@
   "main": "index.js",
   "private": true,
   "dependencies": {
-    "traceur": "0.0.66",
+    "traceurified-module-runtime ": "0.0.1"
+  },
+  "devDependencies": {
     "traceurified-module": "0.0.1"
   },
   "scripts": {

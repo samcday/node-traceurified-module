@@ -2,4 +2,4 @@
 
 var traceurifiedModule = require("..");
 
-console.log(traceurifiedModule.compile(process.cwd()));
+traceurifiedModule.compile(process.cwd());
