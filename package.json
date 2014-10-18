@@ -33,5 +33,23 @@
   "dependencies": {
     "mkdirp": "^0.5.0",
     "traceur": "0.0.72"
+  },
+  "jshintConfig": {
+    "node": true,
+    "unused": true,
+    "strict": true,
+    "eqeqeq": true,
+    "latedef": true,
+    "newcap":false,
+
+    "globals": {
+      "describe"   : false,
+      "it"         : false,
+      "before"     : false,
+      "beforeEach" : false,
+      "after"      : false,
+      "afterEach"  : false,
+      "Symbol"     : false
+    }
   }
 }
