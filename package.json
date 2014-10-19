@@ -27,9 +27,6 @@
     "url": "https://github.com/samcday/node-traceurified-module/issues"
   },
   "homepage": "https://github.com/samcday/node-traceurified-module",
-  "publishConfig": {
-    "registry": "https://registry.npmjs.org"
-  },
   "dependencies": {
     "mkdirp": "^0.5.0",
     "traceur": "0.0.72"
