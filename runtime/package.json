@@ -1,6 +1,6 @@
 {
   "name": "traceurified-module-runtime",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "description": "Write Node.js packages in ES6 (runtime).",
   "main": "index.js",
   "scripts": {
