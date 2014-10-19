@@ -19,11 +19,9 @@ var findPackageRoot = function(searchPath) {
   throw new Error("Couldn't find a package.json from caller. Are you trying to use this from a REPL?");
 };
 
-var createSandbox = function(ctxModule, filename) {
+var createSandbox = function(traceurifiedRequire, ctxModule, filename) {
   // A lot of this code is jacked from node-core module.js _compile
-  var ctxRequire = function require(path) {
-    return ctxModule.require(path);
-  };
+  var ctxRequire = traceurifiedRequire;
 
   ctxRequire.resolve = function(request) {
     return Module._resolveFilename(request, ctxModule);
@@ -73,7 +71,7 @@ var setupTraceurRuntime = function(originModule, ctx) {
 // The provided require() function will intelligently load the Traceur compiled
 // code when necessary, and fallback to regular require() otherwise.
 var createTraceurifiedRequire = function(root, manifest, originModule) {
-  return function(id) {
+  var traceurifiedRequire = function(id) {
     var moduleFilename = Module._resolveFilename(id, originModule);
 
     if (moduleFilename.indexOf(root) === 0) {
@@ -82,7 +80,7 @@ var createTraceurifiedRequire = function(root, manifest, originModule) {
           var newModule = new Module(moduleFilename, originModule);
           Module._cache[moduleFilename] = newModule;
 
-          var ctx = vm.createContext(createSandbox(newModule, moduleFilename));
+          var ctx = vm.createContext(createSandbox(traceurifiedRequire, newModule, moduleFilename));
           setupTraceurRuntime(originModule, ctx);
 
           // We don't add "global" to the sandbox until after we've set up Traceur runtime.
@@ -98,6 +96,8 @@ var createTraceurifiedRequire = function(root, manifest, originModule) {
       }
     }
   };
+
+  return traceurifiedRequire;
 };
 
 exports.entrypoint = function(originModule, entrypointFile) {
