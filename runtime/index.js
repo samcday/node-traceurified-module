@@ -106,9 +106,13 @@ exports.entrypoint = function(originModule, entrypointFile) {
   var config = rootPackage.traceurified || {};
   var manifest = config.files || [];
 
-  if (!fs.existsSync(root, traceurifiedDistDir)) {
-    // traceurified-dist doesn't exist. We assume this means we're in dev mode.
+  var traceurifiedModule;
+  try {
+    traceurifiedModule = originModule.require("traceurified-module");
+  } catch(e) {}
 
+  if (traceurifiedModule) {
+    traceurifiedModule.compile(root);
   }
 
   var traceurifiedRequire = createTraceurifiedRequire(root, manifest, originModule);

@@ -25,18 +25,16 @@ exports.compile = function(root) {
 
     var originalFile = path.join(root, file);
     var originalSource = fs.readFileSync(originalFile, "utf8");
+    var originalFilePath = path.relative(distRoot, originalFile);
 
     var sourceMapGenerator = new traceur.outputgeneration.SourceMapGenerator({
       file: originalFile,
     });
 
-    var compileOpts = {
-      // sourceMapGenerator: sourceMapGenerator,
-      sourceMaps: "inline",
-    };
+    var compileOpts = config.options || {};
+    compileOpts.sourceMaps = "inline";
 
-    var compiledSource = traceur.compile(originalSource, compileOpts);
-
+    var compiledSource = traceur.compile(originalSource, compileOpts, originalFilePath);
     fs.writeFileSync(distPath, compiledSource, "utf8");
   });
 };

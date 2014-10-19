@@ -15,6 +15,11 @@
   "traceurified": {
     "files": [
       "index.js"
-    ]
+    ],
+    "options": {
+    }
+  },
+  "jshintConfig": {
+    "esnext": true
   }
 }
