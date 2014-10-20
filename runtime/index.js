@@ -63,7 +63,8 @@ var createSandbox = function(traceurifiedRequire, ctxModule, filename) {
 
 // Ensures the Traceur runtime is initialised in given vm context.
 var setupTraceurRuntime = function(originModule, ctx) {
-  var traceurRuntimePath = Module._resolveFilename("traceur/bin/traceur-runtime", originModule);
+  // var traceurRuntimePath = Module._resolveFilename("traceur/bin/traceur-runtime", originModule);
+  var traceurRuntimePath = path.join(traceurifiedDistDir, "traceur-runtime.js");
   vm.runInContext(fs.readFileSync(traceurRuntimePath, "utf8"), ctx, traceurRuntimePath);
 };
 
@@ -80,7 +81,8 @@ var createTraceurifiedRequire = function(root, manifest, originModule) {
           var newModule = new Module(moduleFilename, originModule);
           Module._cache[moduleFilename] = newModule;
 
-          var ctx = vm.createContext(createSandbox(traceurifiedRequire, newModule, moduleFilename));
+          var newRequire = createTraceurifiedRequire(root, manifest, newModule);
+          var ctx = vm.createContext(createSandbox(newRequire, newModule, moduleFilename));
           setupTraceurRuntime(originModule, ctx);
 
           // We don't add "global" to the sandbox until after we've set up Traceur runtime.
@@ -95,6 +97,7 @@ var createTraceurifiedRequire = function(root, manifest, originModule) {
         }
       }
     }
+    return originModule.require(id);
   };
 
   return traceurifiedRequire;
@@ -106,14 +109,16 @@ exports.entrypoint = function(originModule, entrypointFile) {
   var config = rootPackage.traceurified || {};
   var manifest = config.files || [];
 
-  var traceurifiedModule;
-  try {
-    traceurifiedModule = originModule.require("traceurified-module");
-  } catch(e) {}
+  // This doesn't work. traceurified-module will need to do compilation in a
+  // sandboxed traceur.
+  // var traceurifiedModule;
+  // try {
+  //   traceurifiedModule = originModule.require("traceurified-module");
+  // } catch(e) {}
 
-  if (traceurifiedModule) {
-    traceurifiedModule.compile(root);
-  }
+  // if (traceurifiedModule) {
+  //   traceurifiedModule.compile(root);
+  // }
 
   var traceurifiedRequire = createTraceurifiedRequire(root, manifest, originModule);
   return traceurifiedRequire(entrypointFile);
