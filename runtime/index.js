@@ -19,7 +19,7 @@ var findPackageRoot = function(searchPath) {
   throw new Error("Couldn't find a package.json from caller. Are you trying to use this from a REPL?");
 };
 
-var createSandbox = function(traceurifiedRequire, ctxModule, filename) {
+var initModule = function(traceurifiedRequire, ctxModule, filename) {
   // A lot of this code is jacked from node-core module.js _compile
   var ctxRequire = traceurifiedRequire;
 
@@ -33,16 +33,19 @@ var createSandbox = function(traceurifiedRequire, ctxModule, filename) {
                     'environment variable instead.');
   }});
   ctxRequire.main = process.mainModule;
-
   // Enable support to add extra extension types
   ctxRequire.extensions = Module._extensions;
   ctxRequire.registerExtension = function() {
     throw new Error('require.registerExtension() removed. Use ' +
                     'require.extensions instead.');
   };
-
   ctxRequire.cache = Module._cache;
 
+  ctxModule.filename = filename;
+  ctxModule.paths = Module._nodeModulePaths(path.dirname(filename));
+};
+
+var createSandbox = function(ctxRequire, ctxModule, filename) {
   var sandbox = {
     module: ctxModule,
     exports: ctxModule.exports,
@@ -82,6 +85,8 @@ var createTraceurifiedRequire = function(root, manifest, originModule) {
           Module._cache[moduleFilename] = newModule;
 
           var newRequire = createTraceurifiedRequire(root, manifest, newModule);
+          initModule(newRequire, newModule, moduleFilename);
+
           var ctx = vm.createContext(createSandbox(newRequire, newModule, moduleFilename));
           setupTraceurRuntime(originModule, ctx);
 
@@ -121,5 +126,5 @@ exports.entrypoint = function(originModule, entrypointFile) {
   // }
 
   var traceurifiedRequire = createTraceurifiedRequire(root, manifest, originModule);
-  return traceurifiedRequire(entrypointFile);
+  originModule.exports = traceurifiedRequire(entrypointFile);
 };
